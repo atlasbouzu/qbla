@@ -1,6 +1,12 @@
 # Use the official Golang image as the base image
 FROM golang:1.23-alpine
 # Set the Current Working Directory inside the container
+
+#ENV PYTHONUNBUFFERED=1
+RUN apk add --no-cache python3 py3-pip
+#RUN python3 -m ensurepip
+#RUN pip3 install --no-cache --upgrade pip setuptools
+
 WORKDIR /api
 # Copy go mod file
 COPY go.mod go.sum ./
