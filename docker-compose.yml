@@ -1,11 +1,13 @@
 services:
   web:
+    container_name: qbla_app
     build: .
     ports:
       - "8080:8080"
     volumes:
       - .:/api
   db:
+    container_name: qbla_db
     image: postgres:latest
     restart: always
     environment:
