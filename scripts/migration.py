@@ -39,6 +39,11 @@ def init_db_conn():
     print("Initialize DB connection")
     return Database(creds)
 
+def prep_db_ops(dbConn):
+    if not migration_table_exists(dbConn):
+        init_migration_table(dbConn)
+
+
 #TODO: downができてからこれが次
 def get_args_opts(args):
     return {}
@@ -47,14 +52,13 @@ def main():
     args = sys.argv[1:]
     args_opts = get_args_opts(args)
     
-    dbConn = init_db_conn()
-    
-    if not migration_table_exists(dbConn):
-        init_migration_table(dbConn)
-    
     if args[0] == "up":
+        dbConn = init_db_conn()
+        prep_db_ops(dbConn)
         up(dbConn, args_opts)
     elif args[0] == "down":
+        dbConn = init_db_conn()
+        prep_db_ops(dbConn)
         down(dbConn, args_opts)
     elif args[0] == "create":
         create_migration(dbConn, args_opts)
