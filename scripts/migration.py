@@ -15,7 +15,13 @@ def down(dbConn, args_opts):
     dbConn.test("Execute down functions of migration files")
 
 def migration_table_exists(dbConn):
-    dbConn.test("Querying for migration_table")
+    print("Checking for migration table...")
+    
+    result = dbConn.execute("SELECT * FROM schema_migrations")
+    
+    if not result:
+        return False
+    
     return True
 
 def init_migration_table(dbConn):
