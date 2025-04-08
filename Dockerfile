@@ -2,10 +2,9 @@
 FROM golang:1.23-alpine
 # Set the Current Working Directory inside the container
 
-#ENV PYTHONUNBUFFERED=1
 RUN apk add --no-cache python3 py3-pip
-#RUN python3 -m ensurepip
-#RUN pip3 install --no-cache --upgrade pip setuptools
+RUN apk add --no-cache py3-psycopg2
+RUN apk add --no-cache py3-dotenv
 
 WORKDIR /api
 # Copy go mod file
@@ -19,5 +18,4 @@ COPY . .
 # Expose port 8080 to the outside world
 EXPOSE 8080
 # Command to run the executable
-#CMD ["./main"]
 CMD ["go", "run", "main.go"]
