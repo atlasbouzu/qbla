@@ -5,39 +5,38 @@ from dotenv import load_dotenv
 
 sys.path.append(os.path.join(sys.path[0], 'utils'))
 
-from db import Database
-
 def create_migration(dbConn, args_opts):
     print("Create migration file")
 
 def up(dbConn, args_opts):
-    dbConn.test("Execute up functions of migration files")
+    print("Execute up functions of migration files")
 
 def down(dbConn, args_opts):
-    dbConn.test("Execute down functions of migration files")
+    print("Execute down functions of migration files")
 
+# Check if schema_migrations table exists in the database.
 def migration_table_exists(dbConn):
     print("Checking for migration table...")
     
     try:
         with dbConn.cursor() as cur:
             cur.execute("SELECT * FROM schema_migrations")
-            cur.commit()
+            dbConn.commit()
 
         print("schema_migrations table exists.")
         return True
     except psycopg2.errors.UndefinedTable as excp:
-        print("schema_migrations table does not exists.")
+        print("schema_migrations table does not exist.")
         dbConn.rollback()
     
     return False
 
-def init_migration_table(dbConn):
+def create_migration_table(dbConn):
     print("Create schema_migrations table")
     
     try:
         with dbConn.cursor() as cur:
-            cur.execute("CREATE TABL schema_migrations (name VARCHAR(255));")
+            cur.execute("CREATE TABLE schema_migrations (name VARCHAR(255));")
             dbConn.commit()
         
         print("schema_migrations table has been created!")
@@ -79,7 +78,7 @@ def prep_db_ops(dbConn):
     if migration_table_exists(dbConn):
         print("Skipping schema_migrations table creation.")
     else:
-        init_migration_table(dbConn)
+        create_migration_table(dbConn)
 
 
 #TODO: downができてからこれが次
@@ -97,6 +96,7 @@ def db_ops(command, args_opts):
     
     prep_db_ops(dbConn)
     
+    # TODO: try/Exceptionがなしにする
     try:
         if command == "up":
             up(dbConn, args_opts)
@@ -104,19 +104,27 @@ def db_ops(command, args_opts):
             down(dbConn, args_opts)
         else:
             print("Invalid migration command.")
-    except:
+    except Exception as excp:
+        print(excp)
         print("Error executing schema migration command. Please check the error logs for diagnosis and debugging.")
     finally:
         dbConn.close()
 
 def util_ops():
     #        create_migration(dbConn, args_opts)
+    
     print("Migration utility processes")
 
 def main():
     args = sys.argv[1:]
     args_opts = get_args_opts(args)
     
+    if not len(args):
+        print("No valid commands/arguments provided. Please see the migration section of the README.")
+        sys.exit(1)
+    else:
+        print("Starting migration task.")
+
     if not db_related(args[0]):
         util_ops()
     else:
@@ -124,7 +132,6 @@ def main():
 
 if __name__ == "__main__":
     load_dotenv()
-    print("Starting migration task.")
     main()
 else:
     print("Cannot be called as a module yet.")
