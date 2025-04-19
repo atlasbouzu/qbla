@@ -1,7 +1,8 @@
-import sys,os
+import sys,os,re
 import psycopg2
 
 from dotenv import load_dotenv
+from datetime import datetime
 
 sys.path.append(os.path.join(sys.path[0], 'utils'))
 
@@ -15,6 +16,20 @@ def up(dbConn, args_opts):
 # Execute SQL query to rollback changes on the database.
 def down(dbConn, args_opts):
     print("Execute down functions of migration files")
+
+def create(args_opts):
+    full_filename = "{filename}-{timestamp}".format(
+        filename=args_opts['args'][0],
+        timestamp=int(round(datetime.timestamp(datetime.now())))
+    )
+    
+    print("Creating {}...".format(full_filename))
+    
+    full_path = os.path.join(sys.path[0],"../db/migrations/{}.py".format(full_filename))
+    
+    file = open(full_path, 'x')
+    
+    print("{} succesfully created!".format(full_filename))
 
 # Check if schema_migrations table exists in the database.
 def migration_table_exists(dbConn):
@@ -82,10 +97,24 @@ def prep_db_ops(dbConn):
     else:
         create_migration_table(dbConn)
 
-
 #TODO: downができてからこれが次
 def get_args_opts(args):
-    return {}
+    args_opts = args[1:]
+    args = []
+    opts = {}
+    
+    for input in args_opts:
+        scan = re.search(r"^--([a-zA-Z_-]+)=(.*)", input)
+        
+        if scan:
+            opts[scan.group(1)] = scan.group(2)
+        else:
+            args.append(input)
+    
+    return {
+        'args': args,
+        'opts': opts,
+    }
 
 def db_related(command):
     return command == "up" or command == "down"
@@ -112,25 +141,25 @@ def db_ops(command, args_opts):
     finally:
         dbConn.close()
 
-def util_ops():
-    #        create_migration(dbConn, args_opts)
-    
-    print("Migration utility processes")
+def util_ops(command, args_opts):
+    if command == "create":
+        create(args_opts)
+    else:
+        print("Unreconized migration command. Please check the migration section of the README.")
 
 def main():
-    args = sys.argv[1:]
-    args_opts = get_args_opts(args)
+    cl_args = sys.argv[1:]
+    command = cl_args[0]
+    args_opts = get_args_opts(cl_args)
     
-    if not len(args):
+    if not len(cl_args):
         print("No valid commands/arguments provided. Please see the migration section of the README.")
         sys.exit(1)
+    
+    if not db_related(command):
+        util_ops(command, args_opts)
     else:
-        print("Starting migration task.")
-
-    if not db_related(args[0]):
-        util_ops()
-    else:
-        db_ops(args[0], args_opts)
+        db_ops(command, args_opts)
 
 if __name__ == "__main__":
     load_dotenv()
