@@ -8,9 +8,11 @@ sys.path.append(os.path.join(sys.path[0], 'utils'))
 def create_migration(dbConn, args_opts):
     print("Create migration file")
 
+# Execute SQL queries to modify the database.
 def up(dbConn, args_opts):
     print("Execute up functions of migration files")
 
+# Execute SQL query to rollback changes on the database.
 def down(dbConn, args_opts):
     print("Execute down functions of migration files")
 
