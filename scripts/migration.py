@@ -4,11 +4,6 @@ import psycopg2
 from dotenv import load_dotenv
 from datetime import datetime
 
-sys.path.append(os.path.join(sys.path[0], 'utils'))
-
-def create_migration(dbConn, args_opts):
-    print("Create migration file")
-
 # Execute SQL queries to modify the database.
 def up(dbConn, args_opts):
     print("Execute up functions of migration files")
@@ -18,17 +13,19 @@ def down(dbConn, args_opts):
     print("Execute down functions of migration files")
 
 def create(args_opts):
-    full_filename = "{filename}-{timestamp}".format(
+    full_filename = "{timestamp}-{filename}".format(
         filename=args_opts['args'][0],
         timestamp=int(round(datetime.timestamp(datetime.now())))
     )
     
     print("Creating {}...".format(full_filename))
     
-    full_path = os.path.join(sys.path[0],"../db/migrations/{}.py".format(full_filename))
+    full_path = os.path.join(sys.path[0],"../db/migrations/{}.json".format(full_filename))
     
     file = open(full_path, 'x')
-    
+    file.write('{\n\t"up": "",\n\t"down": "",\n}')
+    file.close()
+
     print("{} succesfully created!".format(full_filename))
 
 # Check if schema_migrations table exists in the database.
