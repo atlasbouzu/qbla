@@ -1,4 +1,4 @@
-import sys,os,re
+import sys,os,re,json
 import psycopg2
 
 from dotenv import load_dotenv
@@ -6,7 +6,30 @@ from datetime import datetime
 
 # Execute SQL queries to modify the database.
 def up(dbConn, args_opts):
-    print("Execute up functions of migration files")
+    print("Preparing to execute migration files...")
+    
+    migration_path = os.path.join(sys.path[0], "../db/migrations")
+    
+    migration_files = [
+        file for file in os.listdir(migration_path) if os.path.isfile(os.path.join(migration_path, file))
+    ]
+    
+    print("Found {} migration file/s".format(len(migration_files)))
+    
+    if not len(migration_files):
+        print("No files to migrate. Exiting...")
+        sys.exit(0)
+    
+    for json_file in migration_files:
+        print("Migrating {}...".format(json_file))
+        file_path = os.path.join(migration_path, json_file)
+        print(file_path)
+        
+        mig_file = open(file_path, 'r')
+        data = json.load(mig_file)
+        print(data)
+
+        mig_file.close()
 
 # Execute SQL query to rollback changes on the database.
 def down(dbConn, args_opts):
