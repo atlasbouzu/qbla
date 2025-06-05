@@ -23,7 +23,7 @@ def create(args_opts):
     full_path = os.path.join(sys.path[0],"../db/migrations/{}.json".format(full_filename))
     
     file = open(full_path, 'x')
-    file.write('{\n\t"up": "",\n\t"down": "",\n}')
+    file.write('{\n\t"up": "",\n\t"down": ""\n}')
     file.close()
 
     print("{} succesfully created!".format(full_filename))
