@@ -1,3 +1,19 @@
 #!/usr/bin/python
 
-print("Testing!")
+import sys
+
+from dotenv import load_dotenv
+
+print("Testing, 1,2,3!")
+
+def main():
+    cl_args = sys.argv[1:]
+    
+    print(cl_args)
+
+if __name__ == "__main__":
+    load_dotenv()
+    main()
+else:
+    print("Cannot be called as a module!")
+
