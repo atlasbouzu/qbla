@@ -23,13 +23,26 @@ def up(dbConn, args_opts):
     for json_file in migration_files:
         print("Migrating {}...".format(json_file))
         file_path = os.path.join(migration_path, json_file)
-        print(file_path)
         
         mig_file = open(file_path, 'r')
-        data = json.load(mig_file)
-        print(data)
-
+        migration_queries = json.load(mig_file)
+        
         mig_file.close()
+        
+        if not migration_queries["up"]:
+            print("Cannot process current migration file: Empty query string.")
+            continue
+        
+        try:
+            with dbConn.cursor() as cur:
+                cur.execute(migration_queries["up"])
+                
+                dbConn.commit()
+
+            print("{} succesfully migrated!".format(json_file))
+        except psycopg2.errors.DatabaseError as excp:
+                print("Migration encountered an error!")
+                dbConn.rollback()
 
 # Execute SQL query to rollback changes on the database.
 def down(dbConn, args_opts):
