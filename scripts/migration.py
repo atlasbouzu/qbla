@@ -10,19 +10,17 @@ def up(dbConn, args_opts):
     
     migration_path = os.path.join(sys.path[0], "../db/migrations")
     
-    migration_files = [
-        file for file in os.listdir(migration_path) if os.path.isfile(os.path.join(migration_path, file))
-    ]
+    migration_queue = get_migrations_queue(dbConn, migration_path)
     
-    print("Found {} migration file/s".format(len(migration_files)))
+    print("Found {} migration file/s".format(len(migration_queue)))
     
-    if not len(migration_files):
+    if not len(migration_queue):
         print("No files to migrate. Exiting...")
         sys.exit(0)
     
-    for json_file in migration_files:
+    for json_file in migration_queue:
         print("Migrating {}...".format(json_file))
-        file_path = os.path.join(migration_path, json_file)
+        file_path = os.path.join(migration_path, "{}.json".format(json_file))
         
         mig_file = open(file_path, 'r')
         migration_queries = json.load(mig_file)
@@ -36,13 +34,40 @@ def up(dbConn, args_opts):
         try:
             with dbConn.cursor() as cur:
                 cur.execute(migration_queries["up"])
+                cur.execute("INSERT INTO schema_migrations (name) VALUES (%s);", (json_file,))
                 
                 dbConn.commit()
 
             print("{} succesfully migrated!".format(json_file))
         except psycopg2.errors.DatabaseError as excp:
-                print("Migration encountered an error!")
+                print("Migrating {} encountered an error!".format(json_file))
                 dbConn.rollback()
+
+
+def get_migration_records(dbConn):
+    past_migrations = []
+    
+    try:
+        with dbConn.cursor() as cur:
+            cur.execute("SELECT * FROM schema_migrations")
+            past_migrations = list(map(lambda record: record[0], cur.fetchall()))
+            dbConn.commit()
+            
+    except psycopg2.errors.DatabaseError as excp:
+            print("Failed to retrieve migration records!")
+            dbConn.rollback()
+    
+    return past_migrations
+
+def get_migrations_queue(dbConn, migration_path):
+    past_migrations = get_migration_records(dbConn)
+    
+    migration_files = [
+        re.search(r"^(.+)\.json$", file).group(1) for file in os.listdir(migration_path) if os.path.isfile(os.path.join(migration_path, file))
+    ]
+    
+    return list(set(migration_files) - set(past_migrations))
+
 
 # Execute SQL query to rollback changes on the database.
 def down(dbConn, args_opts):
