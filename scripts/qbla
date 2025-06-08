@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys,re
+import sys,os,re,importlib
 
 from dotenv import load_dotenv
 
@@ -33,14 +33,13 @@ def main():
     command = cli_args[0]
     args_opts = get_args_opts(cli_args[1:])
     
-    print(command)
-    print(args_opts)
-
-    if command == "migrate":
-        print("Migrate!")
-    else:
+    if not os.path.isfile(os.path.join(sys.path[0], command, "__init__.py")):
         print("Unrecognized qbla command. Please see the README for available commands.")
 
+    cmd_script = importlib.import_module(command)
+
+    cmd_script.execute(**args_opts)
+    
 if __name__ == "__main__":
     load_dotenv()
     main()
