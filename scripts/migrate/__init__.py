@@ -1,4 +1,6 @@
-from . import constants,utils,create,up
+import sys
+
+from . import constants,database,create,up
 
 MIGRATE_PREP_MAP = {
     "create": False,
@@ -20,11 +22,12 @@ def execute(args, opts):
         return False
     
     if MIGRATE_PREP_MAP[process_name]:
-        print("Prepare migration process!")
-        process_args["db_conn"] = utils.create_db_conn()
+        process_args["db_conn"] = database.create_db_conn()
+        database.init_migration(process_args["db_conn"])
     
     processes[process_name].execute(**process_args)
     
     if "db_conn" in process_args:
+        print("[TERMINATING] Closing database connection...")
         process_args["db_conn"].close()
 
