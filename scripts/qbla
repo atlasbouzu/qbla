@@ -1,0 +1,48 @@
+#!/usr/bin/python
+
+import sys,os,re,importlib
+
+from dotenv import load_dotenv
+
+def get_args_opts(cli_args):
+    args_opts = cli_args
+    args = []
+    opts = {}
+    
+    for input in args_opts:
+        scan = re.search(r"^--([a-zA-Z_-]+)=(.*)", input)
+        
+        if scan:
+            opts[scan.group(1)] = scan.group(2)
+        else:
+            args.append(input)
+    
+    return {
+        'args': args,
+        'opts': opts,
+    }
+
+def main():
+    cli_args = sys.argv[1:]
+    
+    if not len(cli_args):
+        # Help説明文を代わりに表示することを検討する。
+        print("No valid commands/arguments provided. Please see the migration section of the README.")
+        sys.exit(1)
+    
+    command = cli_args[0]
+    args_opts = get_args_opts(cli_args[1:])
+    
+    if not os.path.isfile(os.path.join(sys.path[0], command, "__init__.py")):
+        print("Unrecognized qbla command. Please see the README for available commands.")
+
+    cmd_script = importlib.import_module(command)
+
+    cmd_script.execute(**args_opts)
+    
+if __name__ == "__main__":
+    load_dotenv()
+    main()
+else:
+    print("Cannot be called as a module!")
+
