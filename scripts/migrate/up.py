@@ -19,7 +19,10 @@ def get_migrations_queue(db_conn):
         re.search(r"^(.+)\.json$", file).group(1) for file in os.listdir(constants.MIGRATIONS_PATH) if os.path.isfile(os.path.join(constants.MIGRATIONS_PATH, file))
     ]
     
-    return list(set(file_queue) - set(past_migrations))
+    queue = list(set(file_queue) - set(past_migrations))
+    queue.sort()
+    
+    return queue
 
 
 def get_migration_records(db_conn):
