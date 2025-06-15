@@ -4,10 +4,8 @@ def execute(db_conn, opts={}, args=[]):
     print("[PROCESSING] Preparing to execute migration files...")
     
     print("[PROCESSING] Gathering migration history...")
-    history = get_migration_history(db_conn)
-    print(history)
     
-    execute_down_queries(db_conn, history)
+    execute_down_queries(db_conn, get_migration_history(db_conn))
 
 def get_migration_history(db_conn):
     history = []
