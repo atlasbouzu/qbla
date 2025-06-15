@@ -1,6 +1,3 @@
-import os,sys,importlib,re,json
-import psycopg2
-
 from . import utils
 
 def execute(db_conn, opts={}, args=[]):
@@ -35,7 +32,8 @@ def execute_down_queries(db_conn, queue):
                     cur.execute(queries["down"])
                     cur.execute("DELETE FROM schema_migrations WHERE name=%s", (filename,))
                 else:
-                    print("[WARNING] No rollback query found in {}. This may interrupt and possibly fail the rollback process.".format(filename))
+                    print("[ERROR] No rollback query found in {}. Terminating process as this may fail the rollback.".format(filename))
+                    raise Exception("Malformed migration file found!")
             
             db_conn.commit()
 
