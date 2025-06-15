@@ -1,7 +1,7 @@
 import os,sys,importlib,re,json
 import psycopg2
 
-from . import constants
+from . import constants, utils
 
 def execute(db_conn, opts={}, args=[]):
     print("[PROCESSING] Preparing to execute migration files...")
@@ -53,9 +53,8 @@ def persist_schema_modifications(db_conn, queue):
     
     for filename in queue:
         print("[PROCESSING] Migrating {}...".format(filename))
-        file_path = os.path.join(constants.MIGRATIONS_PATH, "{}.json".format(filename))
         
-        migration_queries = read_migration_file(file_path)
+        migration_queries = utils.read_migration_file(filename)
         
         if not migration_queries["up"]:
             print("[ERROR] Cannot process current migration file: Empty query string.")

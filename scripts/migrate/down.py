@@ -1,25 +1,46 @@
 import os,sys,importlib,re,json
 import psycopg2
 
-from . import constants
+from . import utils
 
 def execute(db_conn, opts={}, args=[]):
     print("[PROCESSING] Preparing to execute migration files...")
     
-    print("Executing down queries from migrations...")
-    migration_history = get_migration_history(db_conn)
-    print(migration_history)
-
+    print("[PROCESSING] Gathering migration history...")
+    history = get_migration_history(db_conn)
+    print(history)
+    
+    execute_down_queries(db_conn, history)
 
 def get_migration_history(db_conn):
-    past_migrations = []
+    history = []
     
     try:
         with db_conn.cursor() as cur:
             cur.execute("SELECT * FROM schema_migrations ORDER BY name DESC")
-            past_migrations = list(map(lambda record: record[0], cur.fetchall()))
+            history = list(map(lambda record: record[0], cur.fetchall()))
             db_conn.commit()
     except:
         db_conn.rollback()
 
-    return past_migrations
+    return history 
+
+def execute_down_queries(db_conn, queue):
+    try:
+        with db_conn.cursor() as cur:
+            for filename in queue:
+                queries = utils.read_migration_file(filename)
+                
+                if queries["down"]:
+                    cur.execute(queries["down"])
+                    cur.execute("DELETE FROM schema_migrations WHERE name=%s", (filename,))
+                else:
+                    print("[WARNING] No rollback query found in {}. This may interrupt and possibly fail the rollback process.".format(filename))
+            
+            db_conn.commit()
+
+        print("[SUCCESS] Database rollback successful!")
+    except:
+        print("[ERROR] Database rollback failed. Reverting database to previous state...")
+        db_conn.rollback()
+
