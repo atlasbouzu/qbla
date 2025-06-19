@@ -52,7 +52,7 @@ def create_migration_table(db_conn):
     
     try:
         with db_conn.cursor() as cur:
-            cur.execute("CREATE TABLE schema_migrations (name VARCHAR(255));")
+            cur.execute("CREATE TABLE schema_migrations (name VARCHAR(255) UNIQUE NOT NULL);")
             db_conn.commit()
         
         print("[SUCCESS] Schema_migrations table has been created!")

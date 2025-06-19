@@ -1,6 +1,6 @@
 import sys
 
-from . import constants,database,create,up
+from . import constants,database,create,up,down
 
 MIGRATE_PREP_MAP = {
     "create": False,
@@ -14,7 +14,8 @@ def execute(args, opts):
     
     processes = {
         "create": create,
-        "up": up
+        "up": up,
+        "down": down
     }
     
     if not process_name in processes:
