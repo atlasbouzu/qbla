@@ -1,4 +1,5 @@
 import os
+import yaml
 
 from datetime import datetime
 
@@ -15,12 +16,12 @@ def execute(args, opts):
     
     print("Creating {}...".format(full_filename))
     
-    file_path = os.path.join(constants.MIGRATIONS_PATH,"{}.json".format(full_filename))
+    file_path = os.path.join(constants.MIGRATIONS_PATH,"{}.yaml".format(full_filename))
     
     os.umask(0)
     
     with open(file_path, 'w', opener=file_opener) as fs:
-        fs.write('{\n\t"up": "",\n\t"down": ""\n}')
+        yaml.dump({'down': "", "up": ""}, fs, default_flow_style=False)
     
     print("[SUCCESS] {} created!".format(full_filename))
 
