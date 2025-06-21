@@ -5,6 +5,7 @@ FROM golang:1.23-alpine
 RUN apk add --no-cache python3 py3-pip
 RUN apk add --no-cache py3-psycopg2
 RUN apk add --no-cache py3-dotenv
+RUN apk add --no-cache py3-yaml
 
 WORKDIR /api
 # Copy go mod file

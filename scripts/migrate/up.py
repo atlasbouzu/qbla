@@ -1,4 +1,4 @@
-import os,sys,importlib,re,json
+import os,sys,importlib,re
 import psycopg2
 
 from . import constants, utils
@@ -16,7 +16,7 @@ def get_migrations_queue(db_conn):
     past_migrations = get_migration_records(db_conn)
     
     file_queue = [
-        re.search(r"^(.+)\.json$", file).group(1) for file in os.listdir(constants.MIGRATIONS_PATH) if os.path.isfile(os.path.join(constants.MIGRATIONS_PATH, file))
+        re.search(r"^(.+)\.yml$", file).group(1) for file in os.listdir(constants.MIGRATIONS_PATH) if os.path.isfile(os.path.join(constants.MIGRATIONS_PATH, file))
     ]
     
     queue = list(set(file_queue) - set(past_migrations))
@@ -40,14 +40,6 @@ def get_migration_records(db_conn):
     
     return past_migrations
 
-def read_migration_file(file_path):
-    file = open(file_path, 'r')
-    queries = json.load(file)
-        
-    file.close()
-
-    return queries
-
 def persist_schema_modifications(db_conn, queue):
     if not len(queue):
         print("[ERROR] No files to migrate. Exiting...")
@@ -57,13 +49,13 @@ def persist_schema_modifications(db_conn, queue):
     for filename in queue:
         print("[PROCESSING] Migrating {}...".format(filename))
         
-        migration_queries = utils.read_migration_file(filename)
+        up_query = utils.read_migration_file(filename, "up")
         
-        if not migration_queries["up"]:
+        if not up_query:
             print("[ERROR] Cannot process current migration file: Empty query string.")
             continue
         
-        execute_modification(db_conn, migration_queries["up"], filename)
+        execute_modification(db_conn, up_query, filename)
 
 def execute_modification(db_conn, query, mig_filename):
     
