@@ -32,10 +32,10 @@ def execute_down_queries(db_conn, queue):
     try:
         with db_conn.cursor() as cur:
             for filename in queue:
-                queries = utils.read_migration_file(filename)
+                down_query = utils.read_migration_file(filename, "down")
                 
-                if queries["down"]:
-                    cur.execute(queries["down"])
+                if down_query:
+                    cur.execute(down_query)
                     cur.execute("DELETE FROM schema_migrations WHERE name=%s", (filename,))
                 else:
                     print("[ERROR] No rollback query found in {}. Terminating process as this may fail the rollback.".format(filename))
