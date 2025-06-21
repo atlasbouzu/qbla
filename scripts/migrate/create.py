@@ -1,5 +1,4 @@
 import os
-import yaml
 
 from datetime import datetime
 
@@ -17,6 +16,7 @@ def execute(args, opts):
     print("Creating {}...".format(full_filename))
     
     utils.create_migration_file(full_filename)
+    
     print("[SUCCESS] {} created!".format(full_filename))
 
 def args_is_valid(args):
