@@ -1,5 +1,5 @@
 # Use the official Golang image as the base image
-FROM golang:1.23-alpine
+FROM golang:1.24-alpine3.22
 # Set the Current Working Directory inside the container
 
 RUN apk add --no-cache python3 py3-pip
